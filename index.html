@@ -1,0 +1,87 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Daily Fuel</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#68737d;--accent:#246b5f;--line:#e2e6e9}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);padding-bottom:88px}.wrap{max-width:720px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center}.top h1{font-size:27px;margin:8px 0}.date{color:var(--muted);font-size:14px}.card{background:var(--card);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 1px 4px #0000000d}.macro{margin:13px 0}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.bar{height:9px;background:#edf0f2;border-radius:9px;overflow:hidden;margin-top:7px}.fill{height:100%;background:var(--accent);border-radius:9px}.muted{color:var(--muted);font-size:13px}.big{font-weight:700;font-size:20px}.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:650;background:#e8efed;color:#174e45}.primary{background:var(--accent);color:white}.danger{background:#fff0f0;color:#a22}.waterBtns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.waterBtns button{padding:10px 3px}.meal h3{margin:0}.food{padding:12px 0;border-top:1px solid var(--line)}.food:first-of-type{border-top:0}.tabs{position:fixed;bottom:0;left:0;right:0;background:#ffffffee;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}.tabs button{max-width:145px;flex:1;border:0;background:none;padding:13px 3px;color:var(--muted);font-size:12px}.tabs .on{color:var(--accent);font-weight:700}.hide{display:none}label{font-size:13px;color:var(--muted);display:block;margin:10px 0 5px}input,select{width:100%;padding:12px;border:1px solid #d8dde0;border-radius:11px;font-size:16px;background:white}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{display:inline-block;background:#eef3f2;border-radius:999px;padding:7px 10px;margin:4px 4px 0 0;font-size:13px}.historyDay{cursor:pointer}.center{text-align:center}.cal{font-size:13px;color:var(--muted);margin-top:4px}
+</style></head><body><div class="wrap">
+<section id="today"><div class="top"><div><h1>Daily Fuel <span style="font-size:11px;color:#8a949c;font-weight:600;vertical-align:middle">v1.2</span></h1><div class="date" id="todayDate"></div></div><button class="btn" onclick="changeDay()">Date</button></div><div class="card" id="summary"></div><div class="card"><div class="row"><div><b>💧 Water</b><div class="big" id="waterText"></div></div><button class="btn" onclick="customWater()">Custom</button></div><div class="bar"><div class="fill" id="waterBar"></div></div><div class="waterBtns"><button class="btn" onclick="water(8)">+8 oz</button><button class="btn" onclick="water(12)">+12 oz</button><button class="btn" onclick="water(16)">+16 oz</button><button class="btn" onclick="water(20)">+20 oz</button></div></div><div id="meals"></div></section>
+<section id="add" class="hide"><h1>Add Food</h1><div class="card"><label>Meal</label><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select><label>Food name</label><input id="name" placeholder="e.g. Protein shake"><label>Serving / amount (optional)</label><input id="serving" placeholder="e.g. 1 bottle"><div class="grid2"><div><label>Protein (g)</label><input id="protein" inputmode="decimal"></div><div><label>Carbs (g)</label><input id="carbs" inputmode="decimal"></div><div><label>Fat (g)</label><input id="fat" inputmode="decimal"></div><div><label>Calories (optional)</label><input id="calories" inputmode="decimal" placeholder="auto"></div></div><div class="actions"><button class="btn primary" onclick="addFood(false)">Add Food</button><button class="btn" onclick="addFood(true)">Add + Save Food</button></div></div><div class="card"><b>Recent & Saved</b><div id="quick"></div></div></section>
+<section id="saved" class="hide"><h1>Saved Foods</h1><div id="savedList"></div></section>
+<section id="history" class="hide"><h1>History</h1><div class="card"><b>Last 7 days average</b><div id="averages" style="margin-top:10px"></div></div><div id="historyList"></div></section>
+<section id="settings" class="hide"><h1>Settings</h1><div class="card"><b>Daily targets</b><div class="grid2"><div><label>Calories</label><input id="tcal" inputmode="numeric"></div><div><label>Protein (g)</label><input id="tp"></div><div><label>Carbs (g)</label><input id="tc"></div><div><label>Fat (g)</label><input id="tf"></div><div><label>Water (oz)</label><input id="tw"></div></div><div class="actions"><button class="btn primary" onclick="saveTargets()">Save Targets</button></div></div><div class="card"><b>Backup</b><p class="muted">Export regularly if this data matters to you. Browser storage can be cleared by Safari or device settings.</p><div class="actions"><button class="btn" onclick="exportData()">Export Backup</button><label class="btn" style="margin:0">Import Backup<input type="file" accept="application/json" onchange="importData(event)" style="display:none"></label></div></div></section>
+</div><nav class="tabs"><button class="on" onclick="tab('today',this)">Today</button><button onclick="tab('add',this)">Add Food</button><button onclick="tab('saved',this)">Saved</button><button onclick="tab('history',this)">History</button><button onclick="tab('settings',this)">Settings</button></nav>
+<script>
+const KEY='dailyFuelV1';
+const el=id=>document.getElementById(id);
+let db;
+try{db=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){db=null}
+db=db||{days:{},saved:[],recent:[],targets:{calories:1765,protein:170,carbs:125,fat:65,water:80}};
+// Migrate older installs without overwriting existing user-set macro targets.
+if(db.targets.calories==null) db.targets.calories=1765;
+if(db.targets.water===100 && db.targets.protein===150 && db.targets.carbs===160 && db.targets.fat===65){db.targets={calories:1765,protein:170,carbs:125,fat:65,water:80}};
+let active=dateKey(new Date());
+
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function day(){return db.days[active]||(db.days[active]={foods:[],water:0})}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function totals(d){return d.foods.reduce((a,item)=>{a.p+=+item.p||0;a.c+=+item.c||0;a.f+=+item.f||0;a.cal+=+item.cal||(+item.p*4 + +item.c*4 + +item.f*9);return a},{p:0,c:0,f:0,cal:0})}
+function fmt(n){return Math.round(n*10)/10}
+function macro(label,val,target,unit='g'){let pct=Math.min(100,val/target*100||0);return `<div class=macro><div class=row><b>${label}</b><span>${fmt(val)} / ${target} ${unit}</span></div><div class=bar><div class=fill style="width:${pct}%"></div></div></div>`}
+
+function render(){
+  let d=day(),t=totals(d),dt=new Date(active+'T12:00:00');
+  el('todayDate').textContent=dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  el('summary').innerHTML=`<div class=row><div><b>Today's Nutrition</b></div><span class=muted>${d.foods.length} items</span></div>${macro('Calories',t.cal,db.targets.calories,'cal')}${macro('Protein',t.p,db.targets.protein)}${macro('Carbs',t.c,db.targets.carbs)}${macro('Fat',t.f,db.targets.fat)}`;
+  el('waterText').textContent=`${d.water||0} / ${db.targets.water} oz`;
+  el('waterBar').style.width=Math.min(100,(d.water||0)/db.targets.water*100)+'%';
+  el('meals').innerHTML=['Breakfast','Lunch','Dinner','Snack'].map(m=>mealHTML(m,d.foods.filter(item=>item.meal===m))).join('');
+  let quickItems=[...db.saved.slice(0,5),...db.recent.filter(r=>!db.saved.some(s=>s.name===r.name)).slice(0,5)];
+  el('quick').innerHTML=quickItems.map((f,i)=>`<button class="btn quick-food" style="margin:7px 5px 0 0" data-quick-index="${i}">${esc(f.name)}</button>`).join('')||'<p class=muted>Your recent and saved foods will appear here.</p>';
+  el('quick').querySelectorAll('.quick-food').forEach(btn=>btn.addEventListener('click',()=>quickAdd(quickItems[+btn.dataset.quickIndex])));
+  el('savedList').innerHTML=db.saved.map((f,i)=>`<div class=card><div class=row><div><b>${esc(f.name)}</b><div class=muted>${fmt(f.p)}P · ${fmt(f.c)}C · ${fmt(f.f)}F</div></div><button class=btn onclick="useSaved(${i})">Add</button></div><button class="btn danger" style="margin-top:10px" onclick="deleteSaved(${i})">Delete</button></div>`).join('')||'<div class=card>No saved foods yet.</div>';
+  renderHistory();
+  el('tcal').value=db.targets.calories;el('tp').value=db.targets.protein;el('tc').value=db.targets.carbs;el('tf').value=db.targets.fat;el('tw').value=db.targets.water;
+}
+
+function mealHTML(m,foods){return `<div class="card meal"><div class=row><h3>${m}</h3><button class=btn onclick="openAdd('${m}')">+ Add</button></div>${foods.length?foods.map(item=>`<div class=food><div class=row><div><b>${esc(item.name)}</b>${item.serving?`<div class=muted>${esc(item.serving)}</div>`:''}</div><button class="btn danger" onclick="delFood('${item.id}')">Delete</button></div><div class=muted>${fmt(item.p)}P · ${fmt(item.c)}C · ${fmt(item.f)}F · ${Math.round(item.cal||item.p*4+item.c*4+item.f*9)} cal</div></div>`).join(''):'<p class=muted>No food logged.</p>'}</div>`}
+function tab(id,b){document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));el(id).classList.remove('hide');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));if(b)b.classList.add('on');render()}
+function openAdd(m){el('meal').value=m;tab('add',document.querySelectorAll('.tabs button')[1]);setTimeout(()=>el('name').focus(),50)}
+function num(id){return +(el(id).value||0)}
+
+function addFood(doSave){
+  const foodName=el('name').value.trim();
+  if(!foodName){alert('Enter a food name.');el('name').focus();return}
+  const f={
+    id:Date.now().toString(),name:foodName,serving:el('serving').value.trim(),meal:el('meal').value,
+    p:num('protein'),c:num('carbs'),f:num('fat'),cal:num('calories')
+  };
+  if(!f.cal)f.cal=f.p*4+f.c*4+f.f*9;
+  day().foods.push(f);
+  const base={name:f.name,serving:f.serving,p:f.p,c:f.c,f:f.f,cal:f.cal};
+  db.recent=[base,...db.recent.filter(x=>String(x.name||'').toLowerCase()!=foodName.toLowerCase())].slice(0,15);
+  if(doSave){
+    const existing=db.saved.findIndex(x=>String(x.name||'').toLowerCase()===foodName.toLowerCase());
+    if(existing>=0)db.saved[existing]=base;else db.saved.unshift(base);
+  }
+  ['name','serving','protein','carbs','fat','calories'].forEach(id=>el(id).value='');
+  save();
+  tab('today',document.querySelectorAll('.tabs button')[0]);
+}
+function quickAdd(f){if(!f)return;let x={...f,id:Date.now().toString(),meal:el('meal').value||'Snack'};day().foods.push(x);save();tab('today',document.querySelectorAll('.tabs button')[0])}
+function useSaved(i){quickAdd(db.saved[i])}
+function deleteSaved(i){if(confirm('Delete this saved food?')){db.saved.splice(i,1);save()}}
+function delFood(id){if(confirm('Delete this entry?')){day().foods=day().foods.filter(item=>item.id!==id);save()}}
+function water(n){day().water=(day().water||0)+n;save()}
+function customWater(){let n=prompt('How many ounces would you like to add?');if(n!==null&&!isNaN(+n)){day().water=Math.max(0,(day().water||0)+(+n));save()}}
+function changeDay(){let x=prompt('Enter date (YYYY-MM-DD)',active);if(/^\d{4}-\d{2}-\d{2}$/.test(x||'')){active=x;render()}}
+
+function renderHistory(){
+  let keys=Object.keys(db.days).sort().reverse();
+  el('historyList').innerHTML=keys.map(k=>{let d=db.days[k],t=totals(d);return `<div class="card historyDay" onclick="active='${k}';tab('today',document.querySelectorAll('.tabs button')[0])"><div class=row><b>${new Date(k+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</b><span>${Math.round(t.cal)} cal</span></div><div class=muted style="margin-top:7px">${fmt(t.p)}g protein · ${fmt(t.c)}g carbs · ${fmt(t.f)}g fat · ${d.water||0} oz water</div></div>`}).join('')||'<div class=card>No history yet.</div>';
+  let arr=[];for(let i=0;i<7;i++){let d=new Date();d.setDate(d.getDate()-i);let x=db.days[dateKey(d)];if(x)arr.push({t:totals(x),w:x.water||0})}
+  if(arr.length){let a=arr.reduce((z,x)=>({cal:z.cal+x.t.cal,p:z.p+x.t.p,c:z.c+x.t.c,f:z.f+x.t.f,w:z.w+x.w}),{cal:0,p:0,c:0,f:0,w:0});el('averages').innerHTML=`${fmt(a.cal/arr.length)} cal · ${fmt(a.p/arr.length)}g protein · ${fmt(a.c/arr.length)}g carbs · ${fmt(a.f/arr.length)}g fat · ${fmt(a.w/arr.length)} oz water`}else el('averages').textContent='No data yet.'
+}
+function saveTargets(){db.targets={calories:num('tcal'),protein:num('tp'),carbs:num('tc'),fat:num('tf'),water:num('tw')};save();alert('Targets saved.')}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='daily-fuel-backup-'+dateKey(new Date())+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.days||!x.targets)throw new Error('invalid');if(confirm('Replace current app data with this backup?')){db=x;save();alert('Backup imported.')}}catch(err){alert('That does not appear to be a valid Daily Fuel backup.')}};r.readAsText(f);e.target.value=''}
+
+render();
+</script></body></html>
